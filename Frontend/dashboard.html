@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Kalkulator Pintar Profit Shopee</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script>
+    tailwind.config = {
+        theme: { extend: { colors: {
+            shopee: '#EE4D2D', 'shopee-dark': '#D73211', 'shopee-bg': '#F5F5F5', 'shopee-light': '#FFF3EF'
+        } } }
+    }
+</script>
+</head>
+<body class="bg-shopee-bg text-neutral-800 min-h-screen">
+
+<div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-20px] opacity-0 transition-all duration-300 bg-white shadow-xl rounded-lg p-4 border-l-4 border-shopee hidden flex items-center gap-3">
+    <div class="bg-orange-100 p-2 rounded-lg"><i class="fas fa-check-circle text-shopee text-lg"></i></div>
+    <div><span id="toast-msg" class="text-neutral-700 text-sm font-semibold"></span></div>
+</div>
+
+<nav class="bg-white border-b border-neutral-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="bg-shopee p-2 rounded-xl text-white shadow-sm"><i class="fas fa-store text-lg"></i></div>
+            <div>
+                <h1 class="text-base font-extrabold text-neutral-900 tracking-tight">Shopee <span class="text-shopee">Simulasi Profit</span></h1>
+                <p class="text-[10px] text-neutral-400 font-medium">Dashboard</p>
+            </div>
+        </div>
+            <div class="flex items-center gap-2">
+                <a href="index.html" class="text-xs font-semibold text-neutral-500 hover:text-shopee px-2 hidden sm:inline">Kalkulator</a>
+                <a href="history.html" class="text-xs font-semibold text-neutral-500 hover:text-shopee px-2 hidden sm:inline">Riwayat</a>
+<a href="settings.html" class="text-xs font-semibold text-neutral-500 hover:text-shopee px-2 hidden sm:inline">Pengaturan</a>
+                <a href="account.html" class="text-xs font-semibold text-neutral-500 hover:text-shopee px-2 hidden sm:inline">Akun</a>
+                <span id="nav-user-info" class="text-xs font-bold px-2.5 py-1 bg-shopee-light text-shopee rounded-full hidden sm:inline"></span>
+                <button id="nav-logout" class="text-xs font-semibold text-neutral-400 hover:text-shopee px-2"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+     </div>
+ </nav>
+
+<button id="theme-toggle" type="button" class="fixed bottom-5 right-5 z-50 w-11 h-11 rounded-full bg-white border border-neutral-200 shadow-md flex items-center justify-center hover:opacity-95" title="Switch Theme" aria-label="Theme Toggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+    <div class="mb-5">
+        <h2 id="greeting" class="text-lg font-extrabold text-neutral-900">Halo! 👋</h2>
+        <p id="store-name" class="text-xs text-neutral-400 font-medium"></p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading-state" class="text-center py-20 text-neutral-400 text-sm">
+        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+        <p>Memuat data dashboard...</p>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden bg-white border border-dashed border-neutral-200 rounded-2xl p-12 text-center">
+        <i class="fas fa-chart-line text-3xl text-neutral-300 mb-3"></i>
+        <h3 class="font-bold text-neutral-800 mb-1">Belum ada simulasi tersimpan</h3>
+        <p class="text-xs text-neutral-400 mb-4 max-w-sm mx-auto">
+            Statistik dan grafik akan muncul di sini setelah kamu menyimpan hasil hitungan dari kalkulator.
+        </p>
+        <a href="index.html" class="inline-block bg-shopee text-white text-xs font-bold px-5 py-2.5 rounded-lg hover:bg-shopee-dark">
+            Buka Kalkulator
+        </a>
+    </div>
+
+    <!-- Content -->
+    <div id="dashboard-content" class="hidden">
+
+        <!-- Kartu Statistik -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div class="bg-white border border-neutral-200 rounded-2xl p-4">
+                <div class="w-9 h-9 rounded-lg bg-shopee-light text-shopee flex items-center justify-center mb-3">
+                    <i class="fas fa-calculator text-sm"></i>
+                </div>
+                <p class="text-[11px] text-neutral-400 font-semibold mb-0.5">Total Simulasi</p>
+                <p id="stat-total-simulasi" class="text-xl font-extrabold text-neutral-900">0</p>
+            </div>
+            <div class="bg-white border border-neutral-200 rounded-2xl p-4">
+                <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+                    <i class="fas fa-sack-dollar text-sm"></i>
+                </div>
+                <p class="text-[11px] text-neutral-400 font-semibold mb-0.5">Estimasi Total Profit</p>
+                <p id="stat-total-profit" class="text-xl font-extrabold text-neutral-900">Rp 0</p>
+            </div>
+            <div class="bg-white border border-neutral-200 rounded-2xl p-4">
+                <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                    <i class="fas fa-percent text-sm"></i>
+                </div>
+                <p class="text-[11px] text-neutral-400 font-semibold mb-0.5">Rata-rata Margin</p>
+                <p id="stat-rata-margin" class="text-xl font-extrabold text-neutral-900">0%</p>
+            </div>
+            <div class="bg-white border border-neutral-200 rounded-2xl p-4">
+                <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+                    <i class="fas fa-trophy text-sm"></i>
+                </div>
+                <p class="text-[11px] text-neutral-400 font-semibold mb-0.5">Profit Tertinggi</p>
+                <p id="stat-top-profit" class="text-xl font-extrabold text-neutral-900">Rp 0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+            <!-- Grafik Profit -->
+            <div class="lg:col-span-2 bg-white border border-neutral-200 rounded-2xl p-5">
+                <h3 class="text-sm font-bold text-neutral-800 mb-1">Grafik Profit</h3>
+                <p class="text-[11px] text-neutral-400 mb-4">10 simulasi terakhir</p>
+                <div class="h-64"><canvas id="chartProfit"></canvas></div>
+            </div>
+
+            <!-- Produk Profit Tertinggi & Simulasi Terakhir -->
+            <div class="flex flex-col gap-4">
+                <div class="bg-white border border-neutral-200 rounded-2xl p-5">
+                    <h3 class="text-xs font-bold text-neutral-800 mb-3 flex items-center gap-1.5">
+                        <i class="fas fa-trophy text-amber-500"></i> Produk Profit Tertinggi
+                    </h3>
+                    <div id="top-profit-card" class="text-xs text-neutral-400">Belum ada data</div>
+                </div>
+                <div class="bg-white border border-neutral-200 rounded-2xl p-5">
+                    <h3 class="text-xs font-bold text-neutral-800 mb-3 flex items-center gap-1.5">
+                        <i class="fas fa-clock text-neutral-400"></i> Simulasi Terakhir
+                    </h3>
+                    <div id="latest-card" class="text-xs text-neutral-400">Belum ada data</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grafik Margin -->
+        <div class="bg-white border border-neutral-200 rounded-2xl p-5 mb-5">
+            <h3 class="text-sm font-bold text-neutral-800 mb-1">Grafik Margin</h3>
+            <p class="text-[11px] text-neutral-400 mb-4">10 simulasi terakhir</p>
+            <div class="h-56"><canvas id="chartMargin"></canvas></div>
+        </div>
+
+        <div class="text-center">
+            <a href="history.html" class="text-xs font-semibold text-shopee hover:underline">
+                Lihat semua riwayat simulasi <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+    </div>
+</main>
+
+<script src="js/auth.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

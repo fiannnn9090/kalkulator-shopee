@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Pintar Profit Shopee Indonesia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        shopee: '#EE4D2D',
+                        'shopee-dark': '#D73211',
+                        'shopee-bg': '#F5F5F5',
+                        'shopee-light': '#FFF3EF'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-shopee-bg text-neutral-800 transition-colors duration-300 min-h-screen">
+
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-20px] opacity-0 transition-all duration-300 bg-white shadow-xl rounded-lg p-4 border-l-4 border-shopee hidden flex items-center gap-3">
+        <div class="bg-orange-100 p-2 rounded-lg">
+            <i class="fas fa-check-circle text-shopee text-lg"></i>
+        </div>
+        <div>
+            <span id="toast-msg" class="text-neutral-700 text-sm font-semibold"></span>
+        </div>
+    </div>
+
+    <nav class="bg-white border-b border-neutral-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-shopee p-2 rounded-xl text-white shadow-sm">
+                    <i class="fas fa-store text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold text-neutral-900 tracking-tight">Shopee <span class="text-shopee">Simulasi Profit</span></h1>
+                    <p class="text-[10px] text-neutral-400 font-medium">Indonesia Seller Center Helper</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="text-xs font-semibold text-neutral-500 hover:text-shopee px-2 hidden sm:inline">Dashboard</a>
+                <a href="history.html" class="text-xs font-semibold text-neutral-500 hover:text-shopee px-2 hidden sm:inline">Riwayat</a>
+                <span id="nav-user-info" class="text-xs font-bold px-2.5 py-1 bg-shopee-light text-shopee rounded-full hidden sm:inline"></span>
+                <button id="nav-logout" class="text-xs font-semibold text-neutral-400 hover:text-shopee px-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <button id="theme-toggle" type="button" class="fixed bottom-5 right-5 z-50 w-11 h-11 rounded-full bg-white border border-neutral-200 shadow-md flex items-center justify-center hover:opacity-95" title="Switch Theme" aria-label="Theme Toggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-5 space-y-4">
+                <div class="bg-neutral-200/70 p-1 rounded-xl flex gap-1">
+                    <button id="tab-mode1" class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 active-tab">
+                        <i class="fas fa-search-dollar mr-1.5"></i>Cari Harga Jual Ideal
+                    </button>
+                    <button id="tab-mode2" class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 text-neutral-500 hover:text-neutral-800">
+                        <i class="fas fa-chart-line mr-1.5"></i>Cek Profit Harga Pasar
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 space-y-4 border border-neutral-200">
+                    <h3 class="text-xs font-extrabold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fas fa-cog text-shopee"></i> Konfigurasi Biaya & Margin
+                    </h3>
+                    
+                    <div class="space-y-3">
+
+
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Kategori / Jenis Produk (Autocomplete)</label>
+                            <div class="grid grid-cols-1 gap-2">
+                                <div class="relative">
+                                    <input id="combo_produk_autocomplete" type="text" class="w-full text-xs" placeholder="Ketik: Nama produk, misal Fashion, Elektronik, dll" autocomplete="off" />
+                                    <div id="combo_produk_suggestions" class="absolute left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg hidden z-50">
+                                    </div>
+                                </div>
+                                <div class="text-[10px] text-neutral-400 leading-relaxed">Autofill otomatis ke komisi admin.</div>
+                            </div>
+                        </div>
+
+
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Tipe Tipe Penjual Shopee</label>
+
+                            <div class="grid grid-cols-3 gap-2">
+                                <label class="radio-card p-2 text-center cursor-pointer flex flex-col items-center justify-center">
+                                    <input type="radio" name="seller_status" value="non-star" checked class="hidden">
+                                    <span class="text-xs font-bold text-neutral-600">Non-Star</span>
+                                </label>
+                                <label class="radio-card p-2 text-center cursor-pointer flex flex-col items-center justify-center">
+                                    <input type="radio" name="seller_status" value="star" class="hidden">
+                                    <span class="text-xs font-bold text-shopee"><i class="fas fa-star mr-1"></i>Star / Star+</span>
+                                </label>
+                                <label class="radio-card p-2 text-center cursor-pointer flex flex-col items-center justify-center">
+                                    <input type="radio" name="seller_status" value="mall" class="hidden">
+                                    <span class="text-xs font-bold text-red-600"><i class="fas fa-shield-alt mr-1"></i>Shopee Mall</span>
+                                </label>
+                            </div>
+                        </div>
+
+
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center justify-between p-2.5 bg-shopee-light/40 border border-orange-100 rounded-xl cursor-pointer hover:bg-shopee-light/60 transition">
+                                <div class="leading-tight">
+                                    <span class="text-xs font-bold text-neutral-700 block">Gratis Ongkir XTRA</span>
+                                    <span class="text-[9px] text-neutral-400">5,50% (maks Rp40.000)</span>
+                                </div>
+                                <input type="checkbox" id="gongkir-xtra" class="rounded text-shopee shrink-0">
+                            </label>
+                            <label class="flex items-center justify-between p-2.5 bg-shopee-light/40 border border-orange-100 rounded-xl cursor-pointer hover:bg-shopee-light/60 transition">
+                                <div class="leading-tight">
+                                    <span class="text-xs font-bold text-neutral-700 block">Cashback XTRA</span>
+                                    <span class="text-[9px] text-neutral-400">1,40% dari harga jual</span>
+                                </div>
+                                <input type="checkbox" id="cashback-xtra" class="rounded text-shopee shrink-0">
+                            </label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Program Konten</label>
+                            <label class="flex items-center justify-between p-2.5 border border-neutral-200 rounded-xl cursor-pointer hover:border-shopee transition">
+                                <div class="leading-tight">
+                                    <span class="text-xs font-bold text-neutral-700 block">Shopee Video XTRA</span>
+                                    <span class="text-[9px] text-neutral-400">Pesanan dari Shopee Video (3%, maks Rp20.000)</span>
+                                </div>
+                                <input type="checkbox" id="video-xtra" class="rounded text-shopee shrink-0">
+                            </label>
+                            <label class="flex items-center justify-between p-2.5 border border-neutral-200 rounded-xl cursor-pointer hover:border-shopee transition">
+                                <div class="leading-tight">
+                                    <span class="text-xs font-bold text-neutral-700 block">Shopee Live XTRA</span>
+                                    <span class="text-[9px] text-neutral-400">Pesanan dari sesi Shopee Live / Livestream (3%)</span>
+                                </div>
+                                <input type="checkbox" id="live-xtra" class="rounded text-shopee shrink-0">
+                            </label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Biaya Tambahan / Komisi</label>
+                            <label class="flex items-center justify-between p-2.5 border border-neutral-200 rounded-xl cursor-pointer hover:border-shopee transition">
+                                <div class="leading-tight">
+                                    <span class="text-xs font-bold text-neutral-700 block">Asuransi Pengiriman</span>
+                                    <span class="text-[9px] text-neutral-400">0,5% dari harga jual final</span>
+                                </div>
+                                <input type="checkbox" id="asuransi-pengiriman" class="rounded text-shopee shrink-0">
+                            </label>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div class="p-2.5 border border-neutral-200 rounded-xl">
+                                    <label class="text-xs font-bold text-neutral-700 block mb-1">Komisi XTRA</label>
+                                    <div class="relative">
+                                        <input type="number" id="komisi-xtra-pct" class="w-full text-xs font-semibold pr-7" value="0" min="0" max="100" step="0.1">
+                                        <span class="absolute right-2.5 inset-y-0 flex items-center text-neutral-400 text-xs font-bold pointer-events-none">%</span>
+                                    </div>
+                                </div>
+                                <div class="p-2.5 border border-neutral-200 rounded-xl">
+                                    <label class="text-xs font-bold text-neutral-700 block mb-1">Komisi XTRA+</label>
+                                    <div class="relative">
+                                        <input type="number" id="komisi-xtra-plus-pct" class="w-full text-xs font-semibold pr-7" value="0" min="0" max="100" step="0.1">
+                                        <span class="absolute right-2.5 inset-y-0 flex items-center text-neutral-400 text-xs font-bold pointer-events-none">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div id="price-input-container" class="hidden animate-fade-in">
+                                <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">Harga Jual Pasar / Kompetitor</label>
+                                <div class="relative">
+                                    <span class="absolute left-3.5 inset-y-0 flex items-center text-neutral-400 text-sm font-bold pointer-events-none">
+                                        Rp
+                                    </span>
+                                    <input type="text" id="harga-jual-input" class="idr-input pl-10" placeholder="0">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">HPP (Modal Pokok)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3.5 inset-y-0 flex items-center text-neutral-400 text-sm font-bold pointer-events-none">
+                                            Rp
+                                        </span>
+                                        <input type="text" id="hpp" class="idr-input pl-10" value="100.000">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">Operasional / Packing</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3.5 inset-y-0 flex items-center text-neutral-400 text-sm font-bold pointer-events-none">
+                                            Rp
+                                        </span>
+                                        <input type="text" id="packing" class="idr-input pl-10" value="2.000">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="target-profit-section" class="bg-neutral-50 border border-neutral-200 p-3.5 rounded-xl space-y-2.5">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Target Profit Bersih</label>
+                                <select id="profit-type" class="text-xs border-none bg-transparent font-bold text-shopee cursor-pointer w-auto h-auto p-0 focus:ring-0">
+                                    <option value="persen">Persentase (%)</option>
+                                    <option value="nominal">Nominal Tunai (Rp)</option>
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <span id="profit-type-indicator" class="absolute left-3.5 top-2.5 text-neutral-400 text-sm font-bold">%</span>
+                                <input type="text" id="target-val" class="idr-input pl-10 font-bold" value="20">
+                            </div>
+                            
+                            <div id="slider-container" class="pt-1">
+                                <div class="flex justify-between text-[10px] text-neutral-400 font-bold mb-1">
+                                    <span>0%</span>
+                                    <span id="slider-label" class="text-shopee bg-shopee-light px-2 py-0.5 rounded-full">Target: 20%</span>
+                                    <span>100%</span>
+                                </div>
+                                <input type="range" id="profit-slider" min="0" max="100" value="20" class="w-full">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">Budget Iklan Toko (%)</label>
+                                <input type="number" id="ads-pct" class="w-full text-sm font-semibold" value="0" min="0" max="100">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">Voucher Diskon Toko</label>
+                                <div class="relative">
+                                    <span class="absolute left-3.5 inset-y-0 flex items-center text-neutral-400 text-sm font-bold pointer-events-none">
+                                        Rp
+                                    </span>
+                                    <input type="text" id="voucher-nominal" class="idr-input pl-10" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">Skema Pembulatan Harga Jual</label>
+                            <select id="pembulatan" class="w-full text-xs font-medium">
+                                <option value="none">Sesuai nilai hitung riil asli</option>
+                                <option value="100">Bulatkan ke kelipatan Rp 100 teratas</option>
+                                <option value="500">Bulatkan ke kelipatan Rp 500 teratas</option>
+                                <option value="1000">Bulatkan ke kelipatan Rp 1.000 teratas</option>
+                                <option value="900">Ubah angka psikologis ekor jadi ...900</option>
+                                <option value="990">Ubah angka psikologis ekor jadi ...990</option>
+                            </select>
+                        </div>
+
+                        <div class="flex gap-3 pt-2">
+                            <button id="btn-reset" class="flex-1 text-xs py-3 rounded-xl font-bold">
+                                <i class="fas fa-undo-alt mr-1"></i> Reset Input
+                            </button>
+                            <button id="btn-hitung" class="flex-[2] text-xs py-3 rounded-xl font-bold uppercase tracking-wider shadow-md hover:opacity-95 transition">
+                                <i class="fas fa-calculator mr-1"></i> Kalkulasi Ulang
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 space-y-4">
+                
+                <div id="export-area" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="bg-white p-4 rounded-xl border border-neutral-200 relative overflow-hidden">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Rekomendasi Harga Jual</p>
+                            <h3 id="res-harga-jual" class="tracking-tight mt-1">Rp 0</h3>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-neutral-200 relative overflow-hidden">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Estimasi Keuntungan</p>
+                            <h3 id="res-profit" class="tracking-tight mt-1">Rp 0</h3>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-neutral-200 relative overflow-hidden">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Dana Dilepas (Net)</p>
+                            <h3 id="res-dana" class="tracking-tight mt-1">Rp 0</h3>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-neutral-200 flex flex-col items-center justify-center">
+                            <h4 class="text-[11px] font-extrabold mb-3 text-neutral-400 uppercase tracking-wider self-start"><i class="fas fa-chart-pie text-shopee mr-1"></i> Komposisi Finansial</h4>
+                            <div class="w-40 h-40">
+                                <canvas id="profitChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-xl border border-neutral-200 flex flex-col justify-between">
+                            <h4 class="text-[11px] font-extrabold mb-2 text-neutral-400 uppercase tracking-wider"><i class="fas fa-shield-alt text-orange-500 mr-1"></i> Ambang Batas Aman</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center bg-neutral-50 p-2.5 rounded-lg border border-neutral-100">
+                                    <span class="text-xs font-medium text-neutral-600">Rasio Margin Bersih</span>
+                                    <span id="res-margin" class="text-xs font-extrabold text-shopee bg-shopee-light px-2.5 py-1 rounded-md">0%</span>
+                                </div>
+                                <div class="flex justify-between items-center bg-neutral-50 p-2.5 rounded-lg border border-neutral-100">
+                                    <span class="text-xs font-medium text-neutral-600">Harga BEP Minim</span>
+                                    <span id="res-bep" class="text-xs font-extrabold text-neutral-800">Rp 0</span>
+                                </div>
+                                <p class="text-[10px] text-neutral-400 leading-relaxed italic pt-1 border-t border-neutral-100">
+                                    *Menjual di bawah titik BEP akan menyebabkan kerugian operasional akibat beban potongan Shopee.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                        <div class="bg-neutral-50 px-4 py-3 border-b border-neutral-200 flex justify-between items-center">
+                            <div>
+                                <h4 class="text-xs font-extrabold text-neutral-900 uppercase tracking-wider">Lembar Audit Transaksi Penjual</h4>
+                                <p class="text-[10px] text-neutral-400">Rincian beban biaya langsung Shopee secara transparan</p>
+                            </div>
+                            <span class="text-[9px] bg-shopee text-white font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide">Realtime</span>
+                        </div>
+                        <div id="receipt-container" class="p-4 font-sans text-sm">
+                            <div class="flex justify-between text-neutral-400 text-[11px] font-bold uppercase tracking-wide mb-1">
+                                <span>Rincian Finansial</span>
+                                <span>Alokasi Dana</span>
+                            </div>
+                            <div id="receipt-rows" class="space-y-0">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2.5">
+                    <button id="copy-price" class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fas fa-copy text-shopee"></i> Salin Harga
+                    </button>
+                    <button id="export-pdf" class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fas fa-file-pdf text-red-500"></i> Simpan PDF
+                    </button>
+                    <button id="export-excel" class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fas fa-file-excel text-emerald-600"></i> Ekspor Excel
+                    </button>
+                </div>
+
+                <button id="btn-simpan-simulasi" class="w-full py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm bg-shopee text-white hover:bg-shopee-dark">
+                    <i class="fas fa-save"></i> Simpan Simulasi ke Riwayat
+                </button>
+
+                <div class="bg-gradient-to-br p-5 rounded-xl text-neutral-900 shadow-md relative overflow-hidden">
+                    <h4 class="font-bold text-xs mb-1 flex items-center"><i class="fas fa-tags mr-1.5 text-neutral-900"></i> Simulasi Angka Coretan Promo Toko</h4>
+                    <p class="text-[10px] text-neutral-400/90 mb-3">Naikkan harga dasar ke nilai berikut jika ingin memasang promo diskon agar margin asli Anda aman:</p>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-white/10 border border-white/20 p-2 rounded-lg backdrop-blur-sm">
+                            <p class="text-[9px] font-bold tracking-wider text-shopee uppercase">Set Up Diskon 10%</p>
+                            <p id="sim-10" class="text-xs font-extrabold mt-0.5 text-neutral-400">Rp 0</p>
+                        </div>
+                        <div class="bg-white/10 border border-white/20 p-2 rounded-lg backdrop-blur-sm">
+                            <p class="text-[9px] font-bold tracking-wider text-shopee uppercase">Set Up Diskon 20%</p>
+                            <p id="sim-20" class="text-xs font-extrabold mt-0.5 text-white">Rp 0</p>
+                        </div>
+                        <div class="bg-white/10 border border-white/20 p-2 rounded-lg backdrop-blur-sm">
+                            <p class="text-[9px] font-bold tracking-wider text-shopee uppercase">Set Up Diskon 30%</p>
+                            <p id="sim-30" class="text-xs font-extrabold mt-0.5 text-white">Rp 0</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Simpan Simulasi -->
+    <div id="modal-simpan" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+            <h3 class="text-base font-extrabold text-neutral-900 mb-1">Simpan Simulasi</h3>
+            <p class="text-xs text-neutral-400 mb-4">Beri nama produk agar mudah dicari di halaman Riwayat.</p>
+            <label class="text-xs font-semibold text-neutral-600 block mb-1.5">Nama Produk</label>
+            <input id="modal-nama-produk" type="text" placeholder="Contoh: Kaos Polos Combed 30s"
+                class="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm mb-4 focus:outline-none focus:border-shopee">
+            <div id="modal-simpan-msg" class="text-xs mb-3 hidden"></div>
+            <div class="flex gap-2.5">
+                <button id="modal-batal" class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-neutral-200 text-neutral-500">Batal</button>
+                <button id="modal-simpan-submit" class="flex-1 py-2.5 rounded-xl text-xs font-bold bg-shopee text-white">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="js/auth.js"></script>
+<script src="js/theme.js"></script>
+    <script src="js/simulations.js"></script>
+</body>
+</html>

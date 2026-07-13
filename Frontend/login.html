@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Kalkulator Pintar Profit Shopee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #EE4D2D;
+        --primary-dark: #D73211;
+        --primary-light: #FFF3EF;
+        --bg: #F5F5F5;
+        --border: #E8E8E8;
+        --font: 'Plus Jakarta Sans', sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: var(--font);
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg) 60%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .card {
+        width: 100%;
+        max-width: 400px;
+        background: #FFFFFF;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 36px 32px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+    .logo {
+        width: 52px;
+        height: 52px;
+        background: var(--primary);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 22px;
+        margin: 0 auto 16px;
+    }
+    h1 {
+        font-size: 19px;
+        font-weight: 800;
+        text-align: center;
+        color: #222;
+    }
+    p.subtitle {
+        text-align: center;
+        font-size: 13px;
+        color: #888;
+        margin-top: 4px;
+        margin-bottom: 24px;
+    }
+    .tabs {
+        display: flex;
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 4px;
+        margin-bottom: 22px;
+    }
+    .tab-btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 9px 0;
+        font-family: var(--font);
+        font-weight: 700;
+        font-size: 13px;
+        color: #888;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+    .tab-btn.active {
+        background: #FFFFFF;
+        color: var(--primary);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 6px;
+        margin-top: 14px;
+    }
+    input {
+        width: 100%;
+        padding: 11px 13px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        outline: none;
+        transition: border-color .15s ease;
+    }
+    input:focus { border-color: var(--primary); }
+    .btn-submit {
+        width: 100%;
+        margin-top: 22px;
+        padding: 12px 0;
+        border: none;
+        border-radius: 8px;
+        background: var(--primary);
+        color: white;
+        font-family: var(--font);
+        font-weight: 700;
+        font-size: 14.5px;
+        cursor: pointer;
+        transition: background .15s ease;
+    }
+    .btn-submit:hover { background: var(--primary-dark); }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+    .msg {
+        margin-top: 14px;
+        font-size: 12.5px;
+        text-align: center;
+        border-radius: 8px;
+        padding: 9px 10px;
+        display: none;
+    }
+    .msg.error { display: block; background: #FEECEC; color: #D73211; }
+    .msg.success { display: block; background: #ECFDF5; color: #10B981; }
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+/* Dark mode for login page */
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #0B1220 0%, #0F1A2B 60%) !important;
+}
+[data-theme="dark"] .card {
+    background: #0F1A2B !important;
+    border-color: rgba(255,255,255,0.12) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+}
+[data-theme="dark"] h1 { color: #E5E7EB !important; }
+[data-theme="dark"] p.subtitle { color: #9CA3AF !important; }
+[data-theme="dark"] .tabs { background: rgba(255,255,255,0.06) !important; }
+[data-theme="dark"] .tab-btn { color: #9CA3AF !important; }
+[data-theme="dark"] .tab-btn.active { background: #0F1A2B !important; color: #EE4D2D !important; box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important; }
+[data-theme="dark"] label { color: #E5E7EB !important; }
+[data-theme="dark"] input {
+    background: rgba(255,255,255,0.04) !important;
+    border-color: rgba(255,255,255,0.12) !important;
+    color: #E5E7EB !important;
+}
+[data-theme="dark"] input::placeholder { color: rgba(229,231,235,0.4) !important; }
+[data-theme="dark"] .msg.error { background: rgba(215,50,17,0.18) !important; color: #FF8A7A !important; }
+[data-theme="dark"] .msg.success { background: rgba(16,185,129,0.18) !important; color: #34D399 !important; }
+</style>
+</head>
+<body>
+
+<script src="js/theme.js"></script>
+
+<div class="card">
+    <div class="logo">S</div>
+    <h1>Kalkulator Profit Shopee</h1>
+    <p class="subtitle">Masuk untuk mengakses dashboard toko kamu</p>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Masuk</button>
+        <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Daftar</button>
+    </div>
+
+    <!-- FORM LOGIN -->
+    <form id="form-login" class="form-section active">
+        <label for="login-username">Username</label>
+        <input type="text" id="login-username" autocomplete="username" required>
+
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+
+        <button type="submit" class="btn-submit" id="btn-login">Masuk</button>
+        <div class="msg" id="login-msg"></div>
+    </form>
+
+    <!-- FORM REGISTER -->
+    <form id="form-register" class="form-section">
+        <label for="reg-nama">Nama Lengkap (opsional)</label>
+        <input type="text" id="reg-nama" autocomplete="name">
+
+        <label for="reg-username">Username</label>
+        <input type="text" id="reg-username" autocomplete="username" required minlength="4">
+
+        <label for="reg-password">Password</label>
+        <input type="password" id="reg-password" autocomplete="new-password" required minlength="6">
+
+        <button type="submit" class="btn-submit" id="btn-register">Daftar & Masuk</button>
+        <div class="msg" id="register-msg"></div>
+    </form>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+    function switchTab(tab) {
+        document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+        document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+        document.getElementById('form-login').classList.toggle('active', tab === 'login');
+        document.getElementById('form-register').classList.toggle('active', tab === 'register');
+    }
+
+    function showMsg(el, text, type) {
+        el.textContent = text;
+        el.className = `msg ${type}`;
+    }
+
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-login');
+        const msg = document.getElementById('login-msg');
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+        try {
+            await apiPost('/auth/login', { username, password });
+            showMsg(msg, 'Login berhasil, mengalihkan ke kalkulator...', 'success');
+            window.location.href = 'index.html';
+        } catch (err) {
+            showMsg(msg, err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Masuk';
+        }
+    });
+
+    document.getElementById('form-register').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-register');
+        const msg = document.getElementById('register-msg');
+        const namaLengkap = document.getElementById('reg-nama').value.trim();
+        const username = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value;
+
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+        try {
+            await apiPost('/auth/register', { username, password, namaLengkap });
+            showMsg(msg, 'Registrasi berhasil, mengalihkan ke kalkulator...', 'success');
+            window.location.href = 'index.html';
+        } catch (err) {
+            showMsg(msg, err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Daftar & Masuk';
+        }
+    });
+</script>
+</body>
+</html>
